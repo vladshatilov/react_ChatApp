@@ -5,6 +5,11 @@ import PubNub from 'pubnub';
 import {Card, CardActions, CardContent,List, ListItem,Button,Typography,Input} from '@material-ui/core';
 import Header from './Header.js';
 
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import Divider from '@material-ui/core/Divider';
+
+
 class App extends Component {
 	constructor(props){
 		super(props);
@@ -52,9 +57,9 @@ class App extends Component {
 			uuid: this.username
 			});
 		this.pubnub.subscribe({
-			channels: [this.state.channelName]
+			channels: [this.state.channelName,'test']
 			});
-
+		this.historyUpdate();
 		//Our message event handler - adds in every message we receive to our messages state
 		// pubnub.getMessage(this.state.channelName, (msg) => {
 		// 		console.log("Message Received: ",msg);
@@ -70,31 +75,36 @@ class App extends Component {
 
 		// });
 
-		this.pubnub.history(
-	{
-		channel: this.state.channelName,
-		count: 10, // 100 is the default
-		stringifiedTimeToken: true // false is the default
-	},(status, response) => {
-
-		let messages = this.state.messages;
-		let i;
-		for (i	= 0; i < response.messages.length;i++){
-			console.log();
-			messages.push(
-			<Message key={ this.state.messages.length } uuid={ response.messages[i].entry.uuid } text={ response.messages[i].entry.text }/>
-			);
+		
 		}
+	historyUpdate = () => {
 		this.setState({
-			messages: messages
-		});
-		}
-	);
-		}
+					messages: []
+				});
+		this.pubnub.history(
+			{
+				channel: this.state.channelName,
+				count: 10, // 100 is the default
+				stringifiedTimeToken: true // false is the default
+			},(status, response) => {
 
-componentWillUnmount() {
-		this.shutDownPubNub();
+				let messages = this.state.messages;
+				let i;
+				for (i	= 0; i < response.messages.length;i++){
+					console.log();
+					messages.push(
+					<Message key={ this.state.messages.length } uuid={ response.messages[i].entry.uuid } text={ response.messages[i].entry.text }/>
+					);
+				}
+				this.setState({
+					messages: messages
+				});
+				}
+			);
 	}
+	componentWillUnmount() {
+			this.shutDownPubNub();
+		}
 
 	shutDownPubNub = () => {
 		this.pubnub.unsubscribe({
@@ -105,7 +115,7 @@ componentWillUnmount() {
 
 
 	//Publishing messages via PubNub
-	 publishMessage = () => {
+	publishMessage = () => {
 		if (this.state.newMessage) {
 			let messageObject = {
 				text: this.state.newMessage,
@@ -124,9 +134,31 @@ componentWillUnmount() {
 	}
 
 	handleNewMessage = (event) =>{
-	if (event.key === 'Enter') {
-		this.publishMessage();
+		if (event.key === 'Enter') {
+			this.publishMessage();
+		}
 	}
+
+	handleChannelChange = (event,index) => {
+		console.log(index);
+		if (index) {
+			// this.setState({ channelName: 'test' });
+			this.setState({
+				channelName: 'test'
+			}, () => {
+				this.historyUpdate();
+			});
+			// this.historyUpdate();
+		}
+		else {
+			this.setState({
+				channelName: 'Global'
+			}, () => {
+				this.historyUpdate();
+			});
+			// this.setState({ channelName: 'Global' });
+			// this.historyUpdate();
+		}
 	}
 	// pubnub.addListener({
  //		status: function(statusEvent) {
@@ -149,15 +181,16 @@ componentWillUnmount() {
 		return (
 			<div>
 			<Header setNameInChat={this.handleNewName} />
-			<div className={this.props.root}>
+			<div className={'chatWindow'}>
+				<ChannelList selectChannel={(e,i) => this.handleChannelChange(e,i)} />
 				<ChatLog messages={this.state.messages}/>
 			</div>
 			<CardActions>
 			<Input
-				placeholder="Enter a message"
+				className={this.props.input}
+				placeholder="Type here..."
 				fullWidth={true}
 				value={this.state.newMessage}
-				className={this.props.input}
 				onKeyDown={this.handleNewMessage}
 				onChange={this.handleMessageChange}
 				inputProps={{
@@ -169,7 +202,7 @@ componentWillUnmount() {
 				size="small"
 				color="primary"
 				onClick={this.publishMessage}>
-				Submit
+				Send
 			</Button>
 
 			</CardActions>
@@ -177,6 +210,39 @@ componentWillUnmount() {
 		);
 	}
 }
+
+//
+function ChannelList(props){
+	const [selectedIndex, setSelectedIndex] = React.useState(0);
+	const handleListItemClick = (event, index) => {
+		setSelectedIndex(index);
+		props.selectChannel(event,index);
+	  };
+		return(
+			<div className={'classesroot'}>
+				<List component="nav" aria-label="main mailbox folders">
+				<ListItem
+					button
+					selected={selectedIndex === 0}
+					onClick={(event) => handleListItemClick(event, 0)}
+				>
+					<ListItemIcon>
+					</ListItemIcon>
+					<ListItemText primary="Work" />
+				</ListItem>
+				<ListItem
+					button
+					selected={selectedIndex === 1}
+					onClick={(event) => handleListItemClick(event, 1)}
+				>
+					<ListItemIcon>
+					</ListItemIcon>
+					<ListItemText primary="Talk" />
+				</ListItem>
+				</List>				
+			</div>
+		)
+	}
 
 
 //Simple componentthat renders the chat log
