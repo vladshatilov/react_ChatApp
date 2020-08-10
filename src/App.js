@@ -9,6 +9,8 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Divider from '@material-ui/core/Divider';
 
+import 'emoji-mart/css/emoji-mart.css'
+import { Picker } from 'emoji-mart'
 
 class App extends Component {
 	constructor(props){
@@ -16,7 +18,7 @@ class App extends Component {
 
 		
 
-		let defaultChannel = "Global";
+		let defaultChannel = "test1";
 		// const [channel,setChannel] = useState(defaultChannel);
 		// const [messages,setMessages] = useState([]);
 		// const [username,] = useState(['user', new Date().getTime()].join('-'));
@@ -27,21 +29,94 @@ class App extends Component {
 			channelName: defaultChannel,
 			newMessage: "",
 			newChannel: "",
+			showPicker: false,
 		}
 
 		
 		this.username = 'undefined';
+		// this.showPicker = false;
 		// this.pubnub.init(this);
 	}
 	
+	// handleNewOutMessage = (msg) => {
+	// 	console.log('new mess');
+	// 	console.log(msg);
+	// }
 
-	handleNewName = (name) =>{
+
+// 	this.pubnub.deleteMessages(
+//     {
+//         channel: 'test',
+//         start: '1293829200000',
+//         end: '1609448400000'
+//     },
+//     (result) => {
+//         console.log(result);
+//     }
+// );
+
+
+	handleNewName = (name) => {
 		console.log(name);
+		console.log(new Date(2011, 0, 1).getTime());
+		console.log(new Date(1508850607692));
+		console.log(new Date(2021, 0, 1).getTime());
 		this.username = name;
 		this.startPubNub();
+
+
 		// if (event.key === 'Enter') {
 		// 	this.publishMessage();
 		// }
+		// [].forEach.call(this.pubnub, function(pubnub){
+		// 	pubnub.addEventListener("message", this.handleNewOutMessage(),false);
+		// });
+		// console.log(this.state.messages);
+		this.pubnub.addListener({    
+		// status: function(statusEvent) {
+  //         if (statusEvent.category === "PNConnectedCategory") {
+  //           console.log("Connected to PubNub!")
+  //         }
+  //       },    
+        message: (msg) => {
+        	console.log(msg);
+        	console.log(this.state);
+        	console.log(msg.channel);
+        	if (msg.channel === this.state.channelName){
+          if(msg.message.text){
+          	// console.log(msg.message.text);
+            // let newMessages = [];
+            // newMessages.push({
+            //   uuid:msg.message.uuid,
+            //   text: msg.message.text
+            // });
+            // setMessages(messages=>messages.concat(newMessages))
+
+
+            let messages = this.state.messages;
+			
+			// console.log(msg.message.uuid);
+					messages.push(
+					<Message key={ this.state.messages.length } uuid={ msg.message.uuid } text={ msg.message.text } time={ msg.message.time } />
+					);
+				
+				this.setState({
+					messages: messages
+				});
+          }}
+        }
+      });
+
+// 		this.pubnub.deleteMessages(
+//     {
+//         channel: 'Global',
+//         start: '1293829200000',
+//         end: '1609448400000'
+//     },
+//     (result) => {
+//         console.log(result);
+//     }
+// );
 	}
 
 	startPubNub = () => {
@@ -57,9 +132,17 @@ class App extends Component {
 			uuid: this.username
 			});
 		this.pubnub.subscribe({
-			channels: [this.state.channelName,'test']
+			channels: [this.state.channelName,'test2']
+			// channels: [this.state.channelName]
 			});
 		this.historyUpdate();
+
+		
+		// this.pubnub.getMessage(this.state.channelName, (msg) => {
+	 //        console.log("Message Received: ",msg);
+	 //    });
+
+
 		//Our message event handler - adds in every message we receive to our messages state
 		// pubnub.getMessage(this.state.channelName, (msg) => {
 		// 		console.log("Message Received: ",msg);
@@ -93,7 +176,7 @@ class App extends Component {
 				for (i	= 0; i < response.messages.length;i++){
 					console.log();
 					messages.push(
-					<Message key={ this.state.messages.length } uuid={ response.messages[i].entry.uuid } text={ response.messages[i].entry.text }/>
+					<Message key={ this.state.messages.length } uuid={ response.messages[i].entry.uuid } text={ response.messages[i].entry.text} time={response.messages[i].entry.time} />
 					);
 				}
 				this.setState({
@@ -101,6 +184,9 @@ class App extends Component {
 				});
 				}
 			);
+
+
+		
 	}
 	componentWillUnmount() {
 			this.shutDownPubNub();
@@ -112,20 +198,29 @@ class App extends Component {
 		});
 		this.setState({messages: []});
 	}
-
+	
 
 	//Publishing messages via PubNub
 	publishMessage = () => {
 		if (this.state.newMessage) {
+			let timePublish = new Date();
 			let messageObject = {
 				text: this.state.newMessage,
-				uuid: this.username
+				uuid: this.username,
+				time : `${timePublish.getHours()}:${timePublish.getMinutes()}`
 			};
+			console.log(messageObject);
+			
 			this.pubnub.publish({
 				message: messageObject,
-				channel: this.state.channelName
+				channel: this.state.channelName,
+				
 			})
-			this.setState({ newMessage: '' })
+			// this.historyUpdate();
+			this.setState({ newMessage: ''})
+			if (this.state.showPicker) {
+				this.setState({showPicker : !this.state.showPicker})
+			} 
 		}
 	}
 
@@ -144,7 +239,7 @@ class App extends Component {
 		if (index) {
 			// this.setState({ channelName: 'test' });
 			this.setState({
-				channelName: 'test'
+				channelName: 'test2'
 			}, () => {
 				this.historyUpdate();
 			});
@@ -152,7 +247,7 @@ class App extends Component {
 		}
 		else {
 			this.setState({
-				channelName: 'Global'
+				channelName: 'test1'
 			}, () => {
 				this.historyUpdate();
 			});
@@ -160,6 +255,16 @@ class App extends Component {
 			// this.historyUpdate();
 		}
 	}
+	addEmoji = (emoji) => {
+		console.log(`${emoji.native}`);
+		this.setState({ newMessage: [this.state.newMessage + emoji.native] });
+	}
+
+	togglePicker = () => {
+	    this.setState ({showPicker : !this.state.showPicker});
+
+	    console.log(this.state.showPicker);
+	  };
 	// pubnub.addListener({
  //		status: function(statusEvent) {
  //			if (statusEvent.category === "PNConnectedCategory") {
@@ -186,24 +291,37 @@ class App extends Component {
 				<ChatLog messages={this.state.messages}/>
 			</div>
 			<CardActions>
-			<Input
-				className={this.props.input}
-				placeholder="Type here..."
-				fullWidth={true}
-				value={this.state.newMessage}
-				onKeyDown={this.handleNewMessage}
-				onChange={this.handleMessageChange}
-				inputProps={{
-				'aria-label': 'Description',
-				}}
-				autoFocus={true}
-			/>
+			
+				<Input
+					className={this.props.input}
+					placeholder="Type here..."
+					fullWidth={true}
+					value={this.state.newMessage}
+					onKeyDown={this.handleNewMessage}
+					onChange={this.handleMessageChange}
+					inputProps={{
+					'aria-label': 'Description',
+					}}
+					autoFocus={true}
+				/>
+				<div className = "pickerStyle">
+				{this.state.showPicker ? (<Picker
+					
+		            emoji=""
+		            title=""
+		            native={true}
+		            onSelect={ this.addEmoji}
+		          />):null}
+				</div>
+				
+				<Button style={{style:"font-size : 40px; "}} onClick={this.togglePicker}>☺</Button>
 			<Button
 				size="small"
 				color="primary"
 				onClick={this.publishMessage}>
 				Send
 			</Button>
+			
 
 			</CardActions>
 			</div>
@@ -245,6 +363,8 @@ function ChannelList(props){
 	}
 
 
+
+
 //Simple componentthat renders the chat log
 class ChatLog extends Component{
 
@@ -266,7 +386,7 @@ class Message extends Component{
 	render () {
 		return (
 			<div >
-				{ this.props.uuid }: { this.props.text }
+				{ this.props.uuid }: { this.props.text } - {this.props.time}
 			</div>
 		);
 	}
