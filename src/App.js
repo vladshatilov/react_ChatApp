@@ -9,8 +9,9 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Divider from '@material-ui/core/Divider';
 
-import 'emoji-mart/css/emoji-mart.css'
-import { Picker } from 'emoji-mart'
+import 'emoji-mart/css/emoji-mart.css';
+import { Picker } from 'emoji-mart';
+import imageForChat from './img.jpg';
 
 class App extends Component {
 	constructor(props){
@@ -207,7 +208,7 @@ class App extends Component {
 			let messageObject = {
 				text: this.state.newMessage,
 				uuid: this.username,
-				time : `${timePublish.getHours()}:${timePublish.getMinutes()}`
+				time : `${timePublish.getHours()}:${('0'+(timePublish.getMinutes()).toString()).slice(-2)}`
 			};
 			console.log(messageObject);
 			
@@ -286,7 +287,7 @@ class App extends Component {
 		return (
 			<div>
 			<Header setNameInChat={this.handleNewName} />
-			<div className={'chatWindow'}>
+			<div className={'chatWindow'} >
 				<ChannelList selectChannel={(e,i) => this.handleChannelChange(e,i)} />
 				<ChatLog messages={this.state.messages}/>
 			</div>
@@ -386,7 +387,13 @@ class Message extends Component{
 	render () {
 		return (
 			<div >
-				{ this.props.uuid }: { this.props.text } - {this.props.time}
+				<div>
+					<span className = "nameStump" >{this.props.uuid} </span>
+					<span className = "timeStump" >{this.props.time} </span>
+				</div>
+				<div className = "messageStump" >
+				{ this.props.text }
+				</div>
 			</div>
 		);
 	}

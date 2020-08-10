@@ -1,4 +1,10 @@
 
+/*.mainWindow{
+  float: left;
+  width: 100%;
+}
+*/
+
 .chatWindow{
 
     display: flex;
@@ -6,8 +12,50 @@
     justify-content: stretch;
     flex: 1;
     height: calc(100vh - 160px);
+    /*height:800px;*/
+    /*background-image:url(./img.jpg);*/
 
 }
+
+.classesroot{
+  /*background: linear-gradient(rgb(100, 245, 56) 0%, rgb(255, 255, 255) 100%);*/
+  background: linear-gradient(rgb(100, 245, 56) 0%, rgb(255, 255, 255) 100%);
+  /*background: linear-gradient(rgb(100, 245, 56) 0%, rgb(74, 0, 224) 100%);*/
+}
+
+.messageStump{
+    word-break: break-word;
+    white-space: pre-wrap;
+    width: fit-content;
+    line-height: 1.5;
+    font-size: 13px;
+    font-family: Roboto, sans-serif;
+    font-weight: 400;
+    text-align: left;
+    box-shadow: rgba(103, 19, 176, 0.06) 0px 6px 10px;
+    color: rgb(88, 88, 88);
+    border-radius: 0px 10px 10px;
+    padding: 16px;
+    background: rgb(255, 255, 255);
+}
+
+.nameStump{
+    font-size: 12px;
+    font-family: Roboto, sans-serif;
+    font-weight: 500;
+    text-transform: capitalize;
+    color: rgb(88, 88, 88);
+}
+
+.timeStump{
+    font-size: 11px;
+    font-family: Roboto, sans-serif;
+    font-weight: 300;
+    margin-left: 14px;
+    color: rgb(88, 88, 88);
+}
+/*background: linear-gradient(rgb(142, 45, 226) 0%, rgb(74, 0, 224) 100%);*/
+
 .pickerStyle{
   position: absolute !important;
   bottom: 80px !important;
