@@ -1,3 +1,7 @@
+## Type your name to the name field in top-right corner and chat with your colleagues!
+
+
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
