@@ -18,12 +18,12 @@ function Header(props) {
 		}
 	}
 	return (
-		<header>
+		<header className="headerClassHolder">
 			<div className="LogoHeader">
 				<img src={logo} className="App-logo" alt="Chatix logo" />
 			</div>
 			<div className="RoomTitle">
-				<h1>{'Сhat room'}</h1>
+				<h1>{'Mini slack'}</h1>
 			</div>
 			{
 				true ?

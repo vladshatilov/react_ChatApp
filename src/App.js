@@ -19,7 +19,7 @@ class App extends Component {
 
 		
 
-		let defaultChannel = "test1";
+		let defaultChannel = "test3";
 		// const [channel,setChannel] = useState(defaultChannel);
 		// const [messages,setMessages] = useState([]);
 		// const [username,] = useState(['user', new Date().getTime()].join('-'));
@@ -92,13 +92,15 @@ class App extends Component {
             //   text: msg.message.text
             // });
             // setMessages(messages=>messages.concat(newMessages))
-
+            console.log(this.username==msg.message.self);
+            console.log(this.username);
+            console.log(this.username==msg.message.uuid);
 
             let messages = this.state.messages;
 			
 			// console.log(msg.message.uuid);
 					messages.push(
-					<Message key={ this.state.messages.length } uuid={ msg.message.uuid } text={ msg.message.text } time={ msg.message.time } />
+					<Message key={ this.state.messages.length } uuid={ msg.message.uuid } text={ msg.message.text } self={this.username==msg.message.uuid} time={ msg.message.time } />
 					);
 				
 				this.setState({
@@ -133,7 +135,7 @@ class App extends Component {
 			uuid: this.username
 			});
 		this.pubnub.subscribe({
-			channels: [this.state.channelName,'test2']
+			channels: [this.state.channelName,'test4']
 			// channels: [this.state.channelName]
 			});
 		this.historyUpdate();
@@ -165,10 +167,11 @@ class App extends Component {
 		this.setState({
 					messages: []
 				});
+		if(this.pubnub){
 		this.pubnub.history(
 			{
 				channel: this.state.channelName,
-				count: 10, // 100 is the default
+				count: 100, // 100 is the default
 				stringifiedTimeToken: true // false is the default
 			},(status, response) => {
 
@@ -177,7 +180,7 @@ class App extends Component {
 				for (i	= 0; i < response.messages.length;i++){
 					console.log();
 					messages.push(
-					<Message key={ this.state.messages.length } uuid={ response.messages[i].entry.uuid } text={ response.messages[i].entry.text} time={response.messages[i].entry.time} />
+					<Message key={ this.state.messages.length } uuid={ response.messages[i].entry.uuid } text={ response.messages[i].entry.text} self={this.username==response.messages[i].entry.uuid} time={response.messages[i].entry.time} />
 					);
 				}
 				this.setState({
@@ -186,7 +189,7 @@ class App extends Component {
 				}
 			);
 
-
+	}
 		
 	}
 	componentWillUnmount() {
@@ -208,20 +211,23 @@ class App extends Component {
 			let messageObject = {
 				text: this.state.newMessage,
 				uuid: this.username,
-				time : `${timePublish.getHours()}:${('0'+(timePublish.getMinutes()).toString()).slice(-2)}`
+				time : `${timePublish.getHours()}:${('0'+(timePublish.getMinutes()).toString()).slice(-2)}`,
+				self: true
 			};
 			console.log(messageObject);
-			
+			if(this.pubnub){
 			this.pubnub.publish({
 				message: messageObject,
 				channel: this.state.channelName,
 				
 			})
+		}
 			// this.historyUpdate();
 			this.setState({ newMessage: ''})
 			if (this.state.showPicker) {
 				this.setState({showPicker : !this.state.showPicker})
-			} 
+			}
+			document.getElementById("typeMessageForm").focus(); 
 		}
 	}
 
@@ -240,7 +246,7 @@ class App extends Component {
 		if (index) {
 			// this.setState({ channelName: 'test' });
 			this.setState({
-				channelName: 'test2'
+				channelName: 'test4'
 			}, () => {
 				this.historyUpdate();
 			});
@@ -248,7 +254,7 @@ class App extends Component {
 		}
 		else {
 			this.setState({
-				channelName: 'test1'
+				channelName: 'test3'
 			}, () => {
 				this.historyUpdate();
 			});
@@ -285,21 +291,23 @@ class App extends Component {
  //		});
 	render() {
 		return (
-			<div>
+			<div className={"AppWindow"}>
 			<Header setNameInChat={this.handleNewName} />
 			<div className={'chatWindow'} >
-				<ChannelList selectChannel={(e,i) => this.handleChannelChange(e,i)} />
-				<ChatLog messages={this.state.messages}/>
-			</div>
-			<CardActions>
+				<div className={'channelListSideBar'} ><ChannelList selectChannel={(e,i) => this.handleChannelChange(e,i)} />
+				</div>
+				<div className={'chatAndMessageWindow'} ><ChatLog messages={this.state.messages}/>
+				<CardActions>
 			
-				<Input
-					className={this.props.input}
+				<Input 
+					id={"typeMessageForm"}
+					className={'inputFieldClass'}
 					placeholder="Type here..."
 					fullWidth={true}
 					value={this.state.newMessage}
 					onKeyDown={this.handleNewMessage}
 					onChange={this.handleMessageChange}
+					maxlength="15"
 					inputProps={{
 					'aria-label': 'Description',
 					}}
@@ -315,7 +323,7 @@ class App extends Component {
 		          />):null}
 				</div>
 				
-				<Button style={{style:"font-size : 40px; "}} onClick={this.togglePicker}>☺</Button>
+				<Button className={"butForSmile"} onClick={this.togglePicker}>☺</Button>
 			<Button
 				size="small"
 				color="primary"
@@ -325,6 +333,9 @@ class App extends Component {
 			
 
 			</CardActions>
+			</div>
+			</div>
+			
 			</div>
 		);
 	}
@@ -367,19 +378,22 @@ function ChannelList(props){
 
 
 //Simple componentthat renders the chat log
-class ChatLog extends Component{
-
-	render(){
+function ChatLog(props){
+	const messagesContainer = React.createRef();
+	useEffect(() => {
+		messagesContainer.current.scrollTop = messagesContainer.current.scrollHeight
+	}, [props, messagesContainer]);
+	
 		return(
-			<List component="nav">
+			<List className={"listMessageFrame"} component="nav" ref={messagesContainer}>
 				<ListItem>
 				<Typography component="div">
-					{ this.props.messages }
+					{ props.messages }
 				</Typography>
 				</ListItem>
 			</List>
 		)
-	}
+	
 }
 
 //Our message commponent that formats each message.
@@ -390,10 +404,17 @@ class Message extends Component{
 				<div>
 					<span className = "nameStump" >{this.props.uuid} </span>
 					<span className = "timeStump" >{this.props.time} </span>
-				</div>
-				<div className = "messageStump" >
-				{ this.props.text }
-				</div>
+				</div>		
+
+				{this.props.self ? (
+					<div className = "messageStumpSelf" >
+						{ this.props.text }
+					</div>
+				):
+					<div className = "messageStump" >
+						{ this.props.text }
+					</div>
+				}
 			</div>
 		);
 	}
