@@ -1,4 +1,4 @@
-## Type your name to the name field in top-right corner and chat with your colleagues!
+## Type your name to the name field in top-right corner,press enter and chat with your colleagues!
 
 
 
